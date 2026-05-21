@@ -10,10 +10,19 @@ use Illuminate\Support\Facades\Storage;
 
 class EventController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $events = Event::with('category')->latest()->paginate(10);
-        return view('admin.events.index', compact('events'));
+        $search = $request->get('search');
+        
+        $events = Event::when($search, function ($query, $search) {
+            return $query->where('name', 'LIKE', "%{$search}%")
+                         ->orWhere('location', 'LIKE', "%{$search}%");
+        })
+        ->latest()
+        ->paginate(10)
+        ->withQueryString();
+
+        return view('admin.events.index', compact('events', 'search'));
     }
 
     public function create()

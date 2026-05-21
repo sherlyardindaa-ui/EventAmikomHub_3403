@@ -4,13 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\Event;
 use App\Models\Category;
+use App\Models\Partner;  // Tambahkan ini
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
-    public function index(Request $request)
+public function index(Request $request)
     {
         $categories = Category::all();
+        
+        // Ambil partner untuk ditampilkan di homepage
+        $partners = Partner::latest()->take(8)->get();
 
         $query = Event::with('category')
             ->orderBy('date', 'asc');
@@ -23,6 +27,6 @@ class HomeController extends Controller
 
         $events = $query->get();
 
-        return view('welcome', compact('events', 'categories'));
+        return view('welcome', compact('events', 'categories', 'partners'));
     }
 }

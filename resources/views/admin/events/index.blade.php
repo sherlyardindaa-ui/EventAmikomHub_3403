@@ -5,12 +5,39 @@
 
 @section('content')
 
-<div class="mb-4 text-right">
+{{-- SEARCH FORM --}}
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+    <form method="GET" action="{{ route('admin.events.index') }}" class="flex">
+        <div class="relative">
+            <input type="text" 
+                   name="search" 
+                   value="{{ request('search') }}"
+                   placeholder="Cari event (nama/lokasi/kategori)..." 
+                   class="w-80 pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-sm bg-white">
+            <svg class="absolute left-3 top-3 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+        </div>
+        @if(request('search'))
+            <a href="{{ route('admin.events.index') }}" class="ml-2 px-4 py-2.5 bg-slate-200 text-slate-600 rounded-xl hover:bg-slate-300 text-sm font-medium transition">
+                Reset
+            </a>
+        @endif
+    </form>
+
     <a href="{{ route('admin.events.create') }}" 
-       class="inline-block px-6 py-3 bg-indigo-600 text-white rounded-2xl font-bold shadow-lg shadow-indigo-100 hover:bg-indigo-700 active:scale-95 transition">
+       class="inline-block px-6 py-3 bg-indigo-600 text-white rounded-2xl font-bold shadow-lg shadow-indigo-100 hover:bg-indigo-700 active:scale-95 transition text-center">
         + Tambah Event Baru
     </a>
 </div>
+
+{{-- INFO HASIL PENCARIAN --}}
+@if(request('search'))
+<div class="mb-4 text-sm text-slate-500 bg-slate-50 px-5 py-3 rounded-xl">
+    Menampilkan hasil pencarian untuk: <strong class="text-indigo-600">"{{ request('search') }}"</strong>
+    <a href="{{ route('admin.events.index') }}" class="text-indigo-600 hover:underline ml-2">Hapus filter</a>
+</div>
+@endif
 
 <div class="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
     <div class="overflow-x-auto">
@@ -35,7 +62,7 @@
                         {{ $events->firstItem() + $index }}
                     </td>
 
-                    {{-- ✅ GAMBAR OTOMATIS SESUAI EVENT --}}
+                    {{-- GAMBAR OTOMATIS --}}
                     <td class="px-8 py-6">
                         @php
                             $map = [
@@ -83,7 +110,6 @@
                     {{-- AKSI --}}
                     <td class="px-8 py-6">
                         <div class="flex gap-2">
-
                             {{-- EDIT --}}
                             <a href="{{ route('admin.events.edit', $event->id) }}" 
                                class="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl hover:bg-indigo-600 hover:text-white transition">
@@ -97,28 +123,27 @@
                             <form action="{{ route('admin.events.destroy', $event->id) }}" method="POST">
                                 @csrf
                                 @method('DELETE')
-
                                 <button type="submit"
                                     onclick="return confirm('Yakin mau hapus event ini?')"
                                     class="p-2.5 bg-rose-50 text-rose-600 rounded-xl hover:bg-rose-600 hover:text-white transition">
-                                    
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                     </svg>
-
                                 </button>
                             </form>
-
                         </div>
                     </td>
-
                 </tr>
 
                 @empty
                 <tr>
                     <td colspan="5" class="px-8 py-10 text-center text-slate-500">
-                        Belum ada acara yang ditambahkan.
+                        @if(request('search'))
+                            Tidak ada event dengan nama/lokasi/kategori <strong>"{{ request('search') }}"</strong>
+                        @else
+                            Belum ada acara yang ditambahkan.
+                        @endif
                     </td>
                 </tr>
                 @endforelse

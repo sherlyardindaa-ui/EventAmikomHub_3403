@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class DatabaseSeeder extends Seeder
 {
@@ -83,8 +82,7 @@ class DatabaseSeeder extends Seeder
             'poster_path' => 'posters/event-3.png',
         ]);
 
-        // 4. EVENT TAMBAHAN (3 EVENT BARU)
-
+        // 4. EVENT TAMBAHAN
         \App\Models\Event::create([
             'category_id' => $category4->id,
             'title' => 'E-Sport U-Champ 2026',
@@ -116,6 +114,11 @@ class DatabaseSeeder extends Seeder
             'price' => 60000,
             'stock' => 300,
             'poster_path' => 'posters/event-6.png',
+        ]);
+
+        // 5. PARTNER SEEDER 
+        $this->call([
+            PartnerSeeder::class,
         ]);
     }
 }

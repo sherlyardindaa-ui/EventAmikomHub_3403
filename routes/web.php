@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EventController as AdminEventController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\TransactionController as AdminTransactionController;
+use App\Http\Controllers\Admin\PartnerController;
 
 /*
 |--------------------------------------------------------------------------
@@ -34,7 +35,8 @@ Route::get('/checkout', [EventController::class, 'checkout'])
 // ticket
 Route::get('/my-ticket', [EventController::class, 'ticket'])
     ->name('ticket');
-    
+
+// API
 Route::get('/api/events', [EventController::class, 'filterByCategory']);
 
 
@@ -46,14 +48,21 @@ Route::get('/api/events', [EventController::class, 'filterByCategory']);
 
 Route::prefix('admin')->name('admin.')->group(function () {
 
+    // dashboard
     Route::get('/', [DashboardController::class, 'index'])
         ->name('dashboard');
 
+    // events (resource lengkap: index, create, store, edit, update, destroy)
     Route::resource('events', AdminEventController::class);
 
-    Route::get('/categories', [AdminCategoryController::class, 'index'])
-        ->name('categories.index');
+    // categories (resource lengkap untuk CRUD)
+    Route::resource('categories', AdminCategoryController::class);
 
+    // transactions
     Route::get('/transactions', [AdminTransactionController::class, 'index'])
         ->name('transactions.index');
+
+    // partners (resource lengkap)
+    Route::resource('partners', PartnerController::class);
+
 });
