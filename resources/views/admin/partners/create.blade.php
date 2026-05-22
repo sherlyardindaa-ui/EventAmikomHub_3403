@@ -1,34 +1,47 @@
 @extends('layouts.admin')
 
+@section('page_title', 'Tambah Partner')
+@section('page_subtitle', 'Buat partner baru')
+
 @section('content')
-<div class="max-w-2xl mx-auto px-6 py-10">
-
-    <h1 class="text-2xl font-bold mb-6">Tambah Partner</h1>
-
-    <form action="{{ route('admin.partners.store') }}" method="POST" class="space-y-5 bg-white p-6 rounded-lg shadow">
-        @csrf
-
-        <div>
-            <label class="block font-medium">Nama Partner</label>
-            <input type="text" name="name"
-                   class="w-full border rounded p-2"
-                   required>
+<div class="w-full max-w-2xl">
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        
+        <div class="px-5 py-4 border-b border-slate-200">
+            <h2 class="text-lg font-semibold text-slate-800">Form Tambah Partner</h2>
         </div>
 
-        <div>
-            <label class="block font-medium">Logo URL</label>
-            <input type="url" name="logo_url"
-                   class="w-full border rounded p-2"
-                   placeholder="https://placehold.co/200x200"
-                   required>
-        </div>
+        <form action="{{ route('admin.partners.store') }}" method="POST" class="p-5">
+            @csrf
 
-        <button type="submit"
-                class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
-            Simpan
-        </button>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-slate-700 mb-1">Nama Partner *</label>
+                <input type="text" name="name" value="{{ old('name') }}" 
+                       class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                @error('name') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+            </div>
 
-    </form>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-slate-700 mb-1">Logo URL *</label>
+                <input type="url" name="logo_url" value="{{ old('logo_url') }}" 
+                       placeholder="https://example.com/logo.png"
+                       class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                @error('logo_url') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+            </div>
 
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-slate-700 mb-1">Website</label>
+                <input type="url" name="website" value="{{ old('website') }}" 
+                       placeholder="https://example.com"
+                       class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                @error('website') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+            </div>
+
+            <div class="flex gap-3 pt-3">
+                <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Simpan</button>
+                <a href="{{ route('admin.partners.index') }}" class="px-4 py-2 border rounded-lg hover:bg-slate-50">Batal</a>
+            </div>
+        </form>
+    </div>
 </div>
 @endsection

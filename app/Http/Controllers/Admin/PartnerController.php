@@ -5,23 +5,23 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Partner;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class PartnerController extends Controller
 {
     public function index(Request $request)
     {
-    $search = $request->get('search');
-    
-    $partners = Partner::when($search, function ($query, $search) {
-        return $query->where('name', 'LIKE', "%{$search}%");
-    })
-    ->latest()
-    ->paginate(10)
-    ->withQueryString();
+        $search = $request->get('search');
+        
+        $partners = Partner::when($search, function ($query, $search) {
+            return $query->where('name', 'LIKE', "%{$search}%");
+        })
+        ->latest()
+        ->paginate(10)
+        ->withQueryString();
 
-    return view('admin.partners.index', compact('partners', 'search'));
+        return view('admin.partners.index', compact('partners', 'search'));
     }
+
     public function create()
     {
         return view('admin.partners.create');
@@ -31,21 +31,15 @@ class PartnerController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'logo_url' => 'required|url|max:255',
             'website' => 'nullable|url|max:255',
         ]);
 
-        $data = [
+        Partner::create([
             'name' => $request->name,
+            'logo_url' => $request->logo_url,
             'website' => $request->website,
-        ];
-
-        if ($request->hasFile('logo')) {
-            $path = $request->file('logo')->store('partners', 'public');
-            $data['logo'] = $path;
-        }
-
-        Partner::create($data);
+        ]);
 
         return redirect()->route('admin.partners.index')
             ->with('success', 'Partner berhasil ditambahkan');
@@ -63,24 +57,15 @@ class PartnerController extends Controller
 
         $request->validate([
             'name' => 'required|string|max:255',
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'logo_url' => 'required|url|max:255',
             'website' => 'nullable|url|max:255',
         ]);
 
-        $data = [
+        $partner->update([
             'name' => $request->name,
+            'logo_url' => $request->logo_url,
             'website' => $request->website,
-        ];
-
-        if ($request->hasFile('logo')) {
-            if ($partner->logo) {
-                Storage::delete('public/' . $partner->logo);
-            }
-            $path = $request->file('logo')->store('partners', 'public');
-            $data['logo'] = $path;
-        }
-
-        $partner->update($data);
+        ]);
 
         return redirect()->route('admin.partners.index')
             ->with('success', 'Partner berhasil diupdate!');
@@ -89,11 +74,6 @@ class PartnerController extends Controller
     public function destroy($id)
     {
         $partner = Partner::findOrFail($id);
-
-        if ($partner->logo) {
-            Storage::delete('public/' . $partner->logo);
-        }
-
         $partner->delete();
 
         return redirect()->route('admin.partners.index')

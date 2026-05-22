@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str; // ← TAMBAHKAN INI
 
 class CategoryController extends Controller
 {
@@ -20,7 +21,7 @@ class CategoryController extends Controller
         })
         ->latest()
         ->paginate(10)
-        ->withQueryString(); // biar search tetap ada di pagination
+        ->withQueryString();
 
         return view('admin.categories.index', compact('categories', 'search'));
     }
@@ -43,7 +44,8 @@ class CategoryController extends Controller
         ]);
 
         Category::create([
-            'name' => $request->name
+            'name' => $request->name,
+            'slug' => Str::slug($request->name)  // ← TAMBAHKAN INI
         ]);
 
         return redirect()->route('admin.categories.index')
@@ -71,7 +73,8 @@ class CategoryController extends Controller
         ]);
 
         $category->update([
-            'name' => $request->name
+            'name' => $request->name,
+            'slug' => Str::slug($request->name)  // ← TAMBAHKAN INI
         ]);
 
         return redirect()->route('admin.categories.index')
