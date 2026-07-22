@@ -62,26 +62,11 @@
                         {{ $events->firstItem() + $index }}
                     </td>
 
-                    {{-- GAMBAR OTOMATIS --}}
+                    {{-- POSTER DARI DATABASE --}}
                     <td class="px-8 py-6">
-                        @php
-                            $map = [
-                                'jazz' => 'concert.png',
-                                'ai' => 'workshop.png',
-                                'hackathon' => 'hackathon.png',
-                            ];
-
-                            $img = 'concert.png';
-
-                            foreach ($map as $key => $value) {
-                                if (str_contains(strtolower($event->title), $key)) {
-                                    $img = $value;
-                                    break;
-                                }
-                            }
-                        @endphp
-
-                        <img src="{{ asset('assets/' . $img) }}"
+                        <img src="{{ ($event->poster_path && Storage::disk('public')->exists($event->poster_path))
+                                      ? asset('storage/' . $event->poster_path)
+                                      : 'https://placehold.co/64x80?text=No+Image' }}" 
                              class="w-16 h-20 rounded-xl object-cover shadow-sm">
                     </td>
 
@@ -90,18 +75,16 @@
                         <p class="font-black text-slate-800">
                             {{ $event->title }}
                         </p>
-
                         <p class="text-xs text-slate-400">
                             {{ $event->category->name ?? '-' }} • {{ $event->date }}
                         </p>
                     </td>
 
-                    {{-- HARGA --}}
+                    {{-- HARGA & STOK --}}
                     <td class="px-8 py-6">
                         <p class="font-bold text-indigo-600">
                             Rp {{ number_format($event->price, 0, ',', '.') }}
                         </p>
-
                         <p class="text-xs text-slate-400">
                             Stok: {{ $event->stock }}
                         </p>

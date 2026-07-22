@@ -36,23 +36,21 @@ class EventController extends Controller
         $data = $request->validate([
             'category_id' => 'required|exists:categories,id',
             'title' => 'required|string|max:255',
-            'description' => 'required|string',
+            'description' => 'nullable|string',
             'date' => 'required|date',
             'location' => 'required|string|max:255',
-            'price' => 'required|numeric',
-            'stock' => 'required|integer',
-            'poster' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
+            'price' => 'required|numeric|min:0',
+            'stock' => 'required|numeric|min:1',
+            'poster' => 'nullable|image|max:2048'
         ]);
 
-        // ✅ Upload gambar
         if ($request->hasFile('poster')) {
-            $data['image'] = $request->file('poster')->store('events', 'public');
+            $data['poster_path'] = $request->file('poster')->store('posters', 'public');
         }
 
         Event::create($data);
 
-        return redirect()->route('admin.events.index')
-            ->with('success', 'Data event berhasil ditambahkan.');
+        return redirect()->route('admin.events.index')->with('success', 'Data Event berhasil ditambahkan.');
     }
 
     public function edit(Event $event)
@@ -66,36 +64,32 @@ class EventController extends Controller
         $data = $request->validate([
             'category_id' => 'required|exists:categories,id',
             'title' => 'required|string|max:255',
-            'description' => 'required|string',
+            'description' => 'nullable|string',
             'date' => 'required|date',
             'location' => 'required|string|max:255',
-            'price' => 'required|numeric',
-            'stock' => 'required|integer',
-            'poster' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
+            'price' => 'required|numeric|min:0',
+            'stock' => 'required|numeric|min:1',
+            'poster' => 'nullable|image|max:2048'
         ]);
 
-        // ✅ Kalau upload gambar baru
         if ($request->hasFile('poster')) {
-
-            // hapus gambar lama (biar storage nggak numpuk)
-            if ($event->image) {
-                Storage::disk('public')->delete($event->image);
+            // Hapus poster lama jika ada
+            if ($event->poster_path) {
+                Storage::disk('public')->delete($event->poster_path);
             }
-
-            $data['image'] = $request->file('poster')->store('events', 'public');
+            // Upload poster baru
+            $data['poster_path'] = $request->file('poster')->store('posters', 'public');
         }
 
         $event->update($data);
-
-        return redirect()->route('admin.events.index')
-            ->with('success', 'Data event berhasil diperbarui.');
+        return redirect()->route('admin.events.index')->with('success', 'Event berhasil diperbarui.');
     }
 
     public function destroy(Event $event)
     {
-        // ✅ hapus gambar juga
-        if ($event->image) {
-            Storage::disk('public')->delete($event->image);
+        // Hapus poster dari storage jika ada
+        if ($event->poster_path) {
+            Storage::disk('public')->delete($event->poster_path);
         }
 
         $event->delete();

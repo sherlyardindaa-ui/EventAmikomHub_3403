@@ -3,66 +3,57 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\EventController;
-
 use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\EventController as AdminEventController;
-use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
-use App\Http\Controllers\Admin\TransactionController as AdminTransactionController;
+use App\Http\Controllers\Admin\EventController as EventAdminController;
 use App\Http\Controllers\Admin\PartnerController;
+use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\AuthController;
 
-/*
-|--------------------------------------------------------------------------
-| USER AREA
-|--------------------------------------------------------------------------
-*/
+// Redirect /login to /admin/login
+Route::get('/login', function () {
+    return redirect()->route('admin.login');
+})->name('login');
 
-// halaman static
-Route::view('/profil', 'profil');
-Route::view('/katalog', 'katalog');
-Route::view('/bantuan', 'bantuan');
-
-// homepage
+// Rute User Area
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/events/{event}', [EventController::class, 'show'])->name('events.show');
+Route::get('/checkout', [EventController::class,'checkout'])->name('checkout');
+Route::get('/my-ticket', [EventController::class, 'ticket'])->name('ticket');
+Route::get('/checkout/{event}', [App\Http\Controllers\CheckoutController::class, 'create'])->name('checkout.create');
+Route::post('/checkout/{event}', [App\Http\Controllers\CheckoutController::class, 'store'])->name('checkout.store');
+Route::get('/payment/{order_id}', [\App\Http\Controllers\CheckoutController::class, 'payment'])->name('checkout.payment');
+Route::get('/success/{order_id}', [\App\Http\Controllers\CheckoutController::class, 'success'])->name('checkout.success');
+Route::post('/midtrans/callback', [\App\Http\Controllers\MidtransWebhookController::class, 'handle']);
 
-// detail event (sementara hardcoded)
-Route::get('/event/1', [EventController::class, 'show'])
-    ->name('events.show');
-
-// checkout
-Route::get('/checkout', [EventController::class, 'checkout'])
-    ->name('checkout');
-
-// ticket
-Route::get('/my-ticket', [EventController::class, 'ticket'])
-    ->name('ticket');
-
-// API
-Route::get('/api/events', [EventController::class, 'filterByCategory']);
-
-
-/*
-|--------------------------------------------------------------------------
-| ADMIN AREA
-|--------------------------------------------------------------------------
-*/
-
+// Grouping untuk URL berawalan /admin
 Route::prefix('admin')->name('admin.')->group(function () {
+    // Rute Login bebas akses
+    Route::get('login', [AuthController::class, 'showLogin'])->name('login');
+    Route::post('login', [AuthController::class, 'login'])->name('login.post');
+    Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 
-    // dashboard
-    Route::get('/', [DashboardController::class, 'index'])
-        ->name('dashboard');
+    // Mengamankan Route Administrasi di balik tembok (Middleware)
+    Route::middleware(['auth', 'admin'])->group(function () {
+        Route::get('/', function() {
+            return redirect()->route('admin.dashboard');
+        });
+        
+        Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+        Route::resource('events', EventAdminController::class);
+        Route::get('transactions', [DashboardController::class, 'indexTransaction'])->name('transactions.index');
+        
+        // Kelola Partner CRUD
+        Route::get('partners', [PartnerController::class, 'index'])->name('partners.index');
+        Route::post('partners', [PartnerController::class, 'store'])->name('partners.store');
+        Route::put('partners/{partner}', [PartnerController::class, 'update'])->name('partners.update');
+        Route::delete('partners/{partner}', [PartnerController::class, 'destroy'])->name('partners.destroy');
 
-    // events (resource lengkap: index, create, store, edit, update, destroy)
-    Route::resource('events', AdminEventController::class);
+        // Kelola Kategori CRUD
+        Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');
+        Route::post('categories', [CategoryController::class, 'store'])->name('categories.store');
+        Route::put('categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
+        Route::delete('categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
 
-    // categories (resource lengkap untuk CRUD)
-    Route::resource('categories', AdminCategoryController::class);
-
-    // transactions
-    Route::get('/transactions', [AdminTransactionController::class, 'index'])
-        ->name('transactions.index');
-
-    // partners (resource lengkap)
-    Route::resource('partners', PartnerController::class);
-
+        Route::get('transactions', [\App\Http\Controllers\Admin\TransactionController::class, 'index'])->name('transactions.index');
+    });
 });

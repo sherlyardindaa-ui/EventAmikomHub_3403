@@ -69,18 +69,31 @@
         </div>
     </div>
 
-    <div class="mb-8 flex gap-4 justify-center flex-wrap">
-        <a href="{{ url('/') }}"
-           class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded text-black transition">
-            Semua Kategori
-        </a>
+    <!-- FILTER KATEGORI -->
+    <div class="mb-8 flex gap-3 justify-center flex-wrap">
 
-        @foreach($categories as $cat)
-            <a href="{{ url('/?category=' . $cat->slug) }}"
-               class="px-4 py-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded shadow-sm transition">
-                {{ $cat->name }}
-            </a>
-        @endforeach
+    {{-- Semua Kategori --}}
+    <a href="{{ url('/') }}"
+       class="px-5 py-2.5 rounded-full font-semibold text-sm transition-all duration-300
+       {{ !request('category')
+            ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
+            : 'bg-gray-100 text-gray-700 hover:bg-indigo-100 hover:text-indigo-700'
+       }}">
+        Semua Kategori
+    </a>
+
+    {{-- Daftar Kategori --}}
+    @foreach($categories as $cat)
+        <a href="{{ url('/?category=' . $cat->slug) }}"
+           class="px-5 py-2.5 rounded-full font-semibold text-sm transition-all duration-300
+           {{ request('category') == $cat->slug
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
+                : 'bg-gray-100 text-gray-700 hover:bg-indigo-100 hover:text-indigo-700'
+           }}">
+            {{ $cat->name }}
+        </a>
+    @endforeach
+
     </div>
 
     <!-- GRID EVENT -->
@@ -90,18 +103,29 @@
 
             <!-- IMAGE -->
             <div class="relative overflow-hidden aspect-[3/4]">
-                @if($event->poster_path && file_exists(public_path('assets/' . $event->poster_path)))
-                    <img src="{{ asset('assets/' . $event->poster_path) }}"
-                         class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                         alt="{{ $event->title }}">
-                @elseif($event->poster_path && file_exists(public_path('storage/' . $event->poster_path)))
-                    <img src="{{ asset('storage/' . $event->poster_path) }}"
-                         class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                         alt="{{ $event->title }}">
+                @php
+                    $imageUrl = null;
+                    $posterPath = $event->poster_path ?? '';
+                    
+                    if (!empty($posterPath)) {
+                        if (file_exists(public_path($posterPath))) {
+                            $imageUrl = asset($posterPath);
+                        } elseif (Storage::disk('public')->exists($posterPath)) {
+                            $imageUrl = asset('storage/' . $posterPath);
+                        } elseif (file_exists(public_path('assets/' . $posterPath))) {
+                            $imageUrl = asset('assets/' . $posterPath);
+                        }
+                    }
+                @endphp
+
+                @if($imageUrl)
+                    <img src="{{ $imageUrl }}" 
+                         alt="{{ $event->title }}"
+                         class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
                 @else
-                    <div class="w-full h-full bg-gray-300 flex items-center justify-center text-gray-500">
-                        No Image
-                    </div>
+                    <img src="https://placehold.co/600x800/e2e8f0/64748b?text={{ urlencode($event->title ?? 'No Poster') }}" 
+                         alt="{{ $event->title }}"
+                         class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
                 @endif
 
                 <div class="absolute top-4 left-4 px-3 py-1 bg-white/90 rounded-lg text-xs font-bold text-indigo-600">
@@ -124,7 +148,7 @@
                         Rp {{ number_format($event->price, 0, ',', '.') }}
                     </span>
 
-                    <a href="{{ route('events.show') }}"
+                    <a href="{{ route('events.show', $event->id) }}"
                        class="px-5 py-2 bg-indigo-50 text-indigo-600 rounded-xl font-bold hover:bg-indigo-600 hover:text-white transition">
                         Lihat Detail
                     </a>
@@ -168,7 +192,7 @@
                     <img src="{{ asset('storage/' . $partner->logo) }}" alt="{{ $partner->name }}" class="w-full h-full object-cover">
                 @else
                     <svg class="w-12 h-12 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2-2z"/>
                     </svg>
                 @endif
             </div>
